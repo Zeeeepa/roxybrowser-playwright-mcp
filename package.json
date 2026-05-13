@@ -1,0 +1,14 @@
+{
+  "name": "@roxybrowser/playwright-mcp",
+  "version": "0.1.0",
+  "description": "Playwright MCP server based on Microsoft Playwright",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "packageManager": "pnpm@11.0.9"
+}
