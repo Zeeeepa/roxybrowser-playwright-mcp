@@ -4,15 +4,21 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": ["ES2022"],
-    "outDir": "./dist",
-    "rootDir": "./src",
+    "noEmit": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true
+    "paths": {
+      "playwright-core/lib/*": ["./playwright/packages/playwright-core/src/*"],
+      "playwright/lib/*":      ["./playwright/packages/playwright/src/*"],
+      "@playwright/*":         ["./playwright/packages/playwright/src/*"],
+      "@protocol/*":           ["./playwright/packages/protocol/src/*"],
+      "@utils/*":              ["./playwright/packages/utils/*"],
+      "@isomorphic/*":         ["./playwright/packages/isomorphic/*"],
+      "@recorder/*":           ["./playwright/packages/recorder/src/*"],
+      "@trace/*":              ["./playwright/packages/trace/src/*"]
+    }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "playwright"]
+  "exclude": ["node_modules", "dist"]
 }
