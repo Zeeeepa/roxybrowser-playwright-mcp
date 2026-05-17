@@ -126,6 +126,55 @@ playwright/tests/mcp/
 
 不要修改（amend）已有提交，后续修改始终创建新提交。不要添加 Co-Authored-By 或 "Generated with" 行。未收到明确指令前不要执行 `git push`。
 
+## 根包 API 设计原则（src/）
+
+`src/` 下的代码是 `@roxybrowser/playwright-mcp` 的公开 API，封装 playwright 内部实现，提供拟人化浏览器操作能力。
+
+### 核心原则：API 形状与 playwright 保持一致
+
+用户使用本库的方式应与使用 playwright 完全相同，只是：
+- 不支持启动浏览器（无 `launch()`、`launchPersistentContext()` 等）
+- 只支持连接已运行的浏览器（仅 Chromium，通过 CDP）
+- 所有操作内部是拟人化的（鼠标移动、随机延迟、逐字符输入等）
+
+### 正确的 API 形状
+
+```typescript
+import { chromium } from '@roxybrowser/playwright-mcp';
+
+// chromium 是一个对象，有 connectOverCDP 方法，没有 launch
+const browser = await chromium.connectOverCDP('http://localhost:9222');
+
+// 以下与 playwright 完全一致
+const context = await browser.newContext();
+const page = await context.newPage();
+
+await page.goto('https://example.com');   // 不是 navigate()
+await page.click('#button');
+await page.fill('#input', 'hello');
+await page.hover('.menu');
+await page.type('#search', 'query');
+```
+
+### 禁止的设计模式
+
+- **不要**用 `chromium(options)` 函数形式 — 应该是 `chromium.connectOverCDP(endpoint)`
+- **不要**用 `page.navigate()` — 应该是 `page.goto()`
+- **不要**暴露 `launch()` 或任何启动浏览器的方法
+- **不要**用 `RoxyBrowser`/`RoxyContext`/`RoxyPage` 等自定义类名作为公开 API — 内部实现可以用，但对外导出的类型应与 playwright 一致
+
+### 缺少 endpoint 时的行为
+
+`chromium.connectOverCDP()` 若未传入 endpoint，应打印错误信息并 `process.exit(1)`，不抛出异常。
+
+### 拟人化行为实现位置
+
+所有拟人化逻辑在 `src/human/` 下：
+- `mouse.ts` — `humanClick()`（多步移动 + 随机偏移 + 按压时长）、`humanHover()`
+- `keyboard.ts` — `humanType()`（逐字符 + 随机延迟 + 可选 typo 模拟）
+- `scroll.ts` — `humanScroll()`（分步 wheel 事件 + jitter）
+- `utils.ts` — `randInt()`、`randFloat()`、`sleep()`
+
 ## 开发技能
 
 以下技能提供详细开发指南：

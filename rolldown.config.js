@@ -15,6 +15,7 @@ export default defineConfig({
   codeSplitting: false,
   external: [
     /^node:/,
+    /\.node$/,
     // bare Node.js built-ins imported without the node: prefix (e.g. from CJS deps like pngjs)
     'assert', 'buffer', 'child_process', 'events', 'fs', 'path',
     'stream', 'util', 'vm', 'zlib', 'os', 'crypto', 'http', 'https',
