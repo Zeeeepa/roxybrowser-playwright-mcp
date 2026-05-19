@@ -13,6 +13,7 @@ export default defineConfig({
     sourcemap: true,
   },
   codeSplitting: false,
+  platform: 'node',
   external: [
     /^node:/,
     /\.node$/,

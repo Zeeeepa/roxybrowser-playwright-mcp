@@ -17,7 +17,7 @@
 import { getMetainfo } from '@isomorphic/protocolMetainfo';
 import { monotonicTime } from '@isomorphic/time';
 import { SdkObject } from './instrumentation';
-import { BrowserContext } from './browserContext';
+import type { BrowserContext } from './browserContext';
 
 import type { CallMetadata, InstrumentationListener } from './instrumentation';
 import type { Progress } from '@protocol/progress';
@@ -45,7 +45,7 @@ export class Debugger extends SdkObject implements InstrumentationListener {
     // Register as a last listener so the debugger pause runs after other listeners
     // (e.g. recorder action-point capture) have recorded their state.
     context.instrumentation.addListener(this, context, { order: 'last' });
-    this._context.once(BrowserContext.Events.Close, () => {
+    this._context.once('close', () => {
       this._context.instrumentation.removeListener(this);
     });
   }
