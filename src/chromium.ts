@@ -12,7 +12,7 @@ export const chromium = {
   async connectOverCDP(endpoint: string, options?: ConnectOptions): Promise<RoxyBrowser> {
     if (!endpoint) {
       console.error('[roxybrowser] endpoint is required. Pass the CDP URL of a running Chrome instance, e.g. http://localhost:9222');
-      process.exit(1);
+      return process.exit(1) as never;
     }
 
     const pwBrowser = await playwright.chromium.connectOverCDP(
