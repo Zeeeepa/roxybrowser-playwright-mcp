@@ -73,7 +73,7 @@ export class RoxyPage {
     await humanScroll(this.raw.mouse, x, y, deltaY);
   }
 
-  async navigate(url: string): Promise<void> {
+  async goto(url: string): Promise<void> {
     await sleep(randInt(100, 400));
     await this.raw.goto(url, { waitUntil: 'domcontentloaded' });
   }

@@ -9,11 +9,14 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "rolldown -c rolldown.config.js",
-    "dev": "rolldown -c rolldown.config.js --watch"
+    "dev": "rolldown -c rolldown.config.js --watch",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test": "pnpm test:unit"
   },
   "packageManager": "pnpm@11.0.9",
   "devDependencies": {
     "rolldown": "^1.0.1",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.4"
   }
 }

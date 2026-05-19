@@ -6,7 +6,9 @@
       "Bash(pnpm typecheck *)",
       "Bash(pnpm build *)",
       "Bash(node -e ' *)",
-      "WebFetch(domain:rolldown.rs)"
+      "WebFetch(domain:rolldown.rs)",
+      "Bash(pnpm install *)",
+      "Bash(pnpm test:unit *)"
     ]
   }
 }
