@@ -12,8 +12,8 @@ importers:
         specifier: ^1.30.0
         version: 1.30.0(zod@4.4.3)
       '@roxybrowser/openapi':
-        specifier: ^3.0.1-beta.2
-        version: 3.0.1-beta.2(zod@4.4.3)
+        specifier: ^3.0.1
+        version: 3.0.1(zod@4.4.3)
       chrome-remote-interface:
         specifier: ^0.34.0
         version: 0.34.0
@@ -509,9 +509,9 @@ packages:
   '@rolldown/pluginutils@1.0.1':
     resolution: {integrity: sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw==}
 
-  '@roxybrowser/openapi@3.0.1-beta.2':
-    resolution: {integrity: sha512-kd+FIucXlln9bWJnEmWltZr6dXDzli099sJEdudDYfJ8KsqQiF/cy8CxJZFJoq3zxQGe1CxdUIPgfmIh1ZFmOQ==}
-    engines: {node: ^20.19.0 || ^22.18.0 || >=24.11.0}
+  '@roxybrowser/openapi@3.0.1':
+    resolution: {integrity: sha512-vMRA7kuVXHrjCFHVY5zZs1d6G5zz45NSszfgq3I7tQv82RzNd0DD2Op1ip4hYjb4Fs2e2mGMOyM8fmSyrA5H+w==}
+    engines: {node: ^24.11.0}
     hasBin: true
 
   '@standard-schema/spec@1.1.0':
@@ -694,12 +694,15 @@ packages:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
     engines: {node: '>=18'}
 
-  commander@14.0.3:
-    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
-    engines: {node: '>=20'}
+  commander@15.0.0:
+    resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
+    engines: {node: '>=22.12.0'}
 
   commander@2.11.0:
     resolution: {integrity: sha512-b0553uYA5YAEGgyYIGYROzKQ7X5RAqedkfjiZxwi0kL1g3bOaBNNZfYkzt/CL0umgD5wc9Jec2FbB98CjkMRvQ==}
+
+  compare-versions@6.1.1:
+    resolution: {integrity: sha512-4hm4VPpIecmlg59CHXnRDnqGplJFrbLG4aFEl5vl6cK1u76ws3LLvX7ikFnTDl5vo39sjWD6AaDPYodJp/NNHg==}
 
   content-disposition@1.1.0:
     resolution: {integrity: sha512-5jRCH9Z/+DRP7rkvY83B+yGIGX96OYdJmzngqnw2SBSxqCFPd0w2km3s5iawpGX8krnwSGmF0FW5Nhr0Hfai3g==}
@@ -2262,10 +2265,11 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.1': {}
 
-  '@roxybrowser/openapi@3.0.1-beta.2(zod@4.4.3)':
+  '@roxybrowser/openapi@3.0.1(zod@4.4.3)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.30.0(zod@4.4.3)
-      commander: 14.0.3
+      commander: 15.0.0
+      compare-versions: 6.1.1
       dotenv: 17.4.2
     transitivePeerDependencies:
       - '@cfworker/json-schema'
@@ -2466,9 +2470,11 @@ snapshots:
 
   commander@13.1.0: {}
 
-  commander@14.0.3: {}
+  commander@15.0.0: {}
 
   commander@2.11.0: {}
+
+  compare-versions@6.1.1: {}
 
   content-disposition@1.1.0: {}
 
