@@ -38,12 +38,16 @@ const connect = defineTool({
       ...(params.sessionId ? { sessionId: params.sessionId } : {})
     });
     await context.runtime.ensureActiveCursorVisualization().catch(() => undefined);
+    const { snapshot, ...connectionResult } = result;
     response.addTextResult(
       formatConnectResult({
-        ...result,
+        ...connectionResult,
         browserName: result.browserName === "chromium" ? "chrome" : result.browserName
       })
     );
+    if (snapshot) {
+      response.setSnapshotResult(snapshot);
+    }
   }
 });
 

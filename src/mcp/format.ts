@@ -15,7 +15,7 @@ export function formatTabs(tabs: BrowserTab[]): string {
   return lines.join("\n");
 }
 
-export function formatSnapshot(snapshot: BrowserSnapshot): string {
+export function formatSnapshot(snapshot: BrowserSnapshot, snapshotFile?: string): string {
   const url = snapshot.url || "about:blank";
   const title = snapshot.title || "(untitled)";
   const events = formatSnapshotEvents(snapshot);
@@ -31,9 +31,9 @@ export function formatSnapshot(snapshot: BrowserSnapshot): string {
       ? [`- Console: ${snapshot.console.errors} errors, ${snapshot.console.warnings} warnings`]
       : []),
     "### Snapshot",
-    "```yaml",
-    snapshot.text,
-    "```",
+    ...(snapshotFile
+      ? [`- [Snapshot](${snapshotFile})`]
+      : ["```yaml", snapshot.text, "```"]),
     ...(snapshot.consoleLink
       ? ["### Events", `- New console entries: ${snapshot.consoleLink}`, ...events]
       : events.length

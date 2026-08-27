@@ -5,12 +5,15 @@ import { formatSnapshot, formatTabs } from "../format.js";
 import type { BrowserSnapshot, SessionScreenshotMimeType } from "../types.js";
 import type { Context } from "./context.js";
 
+const MAX_INLINE_SNAPSHOT_BYTES = 10_000;
+
 export class Response {
   private readonly results: string[] = [];
   private readonly errors: string[] = [];
   private readonly code: string[] = [];
   private readonly images: Array<{ data: string; mimeType: SessionScreenshotMimeType }> = [];
   private structuredContent: Record<string, unknown> | undefined;
+  private snapshotResult: BrowserSnapshot | undefined;
   private includeSnapshot: "none" | "full" = "none";
   private fullSnapshot:
     | {
@@ -40,6 +43,10 @@ export class Response {
 
   addStructuredResult(content: Record<string, unknown>): void {
     this.structuredContent = content;
+  }
+
+  setSnapshotResult(snapshot: BrowserSnapshot): void {
+    this.snapshotResult = snapshot;
   }
 
   addError(error: string): void {
@@ -117,6 +124,13 @@ export class Response {
       sections.push("### Code", "```js", ...this.code, "```");
     }
 
+    if (this.snapshotResult) {
+      if (sections.length) {
+        sections.push("");
+      }
+      sections.push(await this.formatSnapshotResult(this.snapshotResult));
+    }
+
     if (this.includeSnapshot === "full") {
       if (!await this.context.runtime.hasDialog()) {
         const snapshot = await reconcileSnapshotWithTabs(
@@ -126,7 +140,7 @@ export class Response {
         if (sections.length) {
           sections.push("");
         }
-        sections.push(formatSnapshot(snapshot));
+        sections.push(await this.formatSnapshotResult(snapshot, true));
       }
     }
 
@@ -170,7 +184,7 @@ export class Response {
         if (tabs.length > 1) {
           sections.push(formatTabs(tabs), "");
         }
-        sections.push(formatSnapshot(snapshot));
+        sections.push(await this.formatSnapshotResult(snapshot));
       }
     }
 
@@ -196,6 +210,22 @@ export class Response {
       data: image.data,
       mimeType: image.mimeType
     }));
+  }
+
+  private async formatSnapshotResult(snapshot: BrowserSnapshot, forceFile = false): Promise<string> {
+    // ⚠️ DIVERGENCE FROM PLAYWRIGHT: Playwright keeps an explicit
+    // browser_snapshot inline. Roxy spills oversized explicit and connect
+    // snapshots so a single tool result cannot exhaust the model context.
+    if (!forceFile && Buffer.byteLength(snapshot.text, "utf8") <= MAX_INLINE_SNAPSHOT_BYTES) {
+      return formatSnapshot(snapshot);
+    }
+
+    const snapshotFilename = await this.context.resolveOutputFile(
+      `page-${new Date().toISOString().replaceAll(":", "-")}.yml`,
+      "snapshot"
+    );
+    await this.context.writeTextFile(snapshotFilename, snapshot.text);
+    return formatSnapshot(snapshot, snapshotFilename);
   }
 
   private async enforceOutputBudget(): Promise<void> {

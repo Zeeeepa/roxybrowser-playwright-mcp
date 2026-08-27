@@ -854,6 +854,19 @@ class MismatchedSnapshotMetadataSession extends FakeConnectedBrowserSession {
   }
 }
 
+class LargeSnapshotSession extends FakeConnectedBrowserSession {
+  override async snapshot(request: BrowserSnapshotRequest = {}): Promise<BrowserSnapshot> {
+    const snapshot = await super.snapshot(request);
+    return {
+      ...snapshot,
+      text: [
+        '- document "Large snapshot" [ref=e1]',
+        ...Array.from({ length: 600 }, (_, index) => `  - paragraph: large snapshot row ${index} ${"x".repeat(24)}`)
+      ].join("\n")
+    };
+  }
+}
+
 class SecretConsoleSession extends FakeConnectedBrowserSession {
   override async consoleMessages() {
     return [{
@@ -3246,7 +3259,7 @@ describe("MCP server", () => {
       });
 
       expect(result.isError).toBeUndefined();
-      expect(textFromResult(result)).toContain("button");
+      expect(textFromResult(result)).toContain("### Snapshot\n- [Snapshot](");
     });
 
     it("accepts CSS selector as target", async () => {
@@ -3726,8 +3739,136 @@ describe("MCP server", () => {
 
       expect(result.isError).toBeUndefined();
       const text = textFromResult(result);
+      expect(text).toContain("### Snapshot\n- [Snapshot](");
+    });
+
+    it("writes automatic action snapshots to a local file like Playwright MCP", async () => {
+      const snapshotsDir = await mkdtemp(join(tmpdir(), "roxybrowser-mcp-auto-snapshots-"));
+      cleanupCallbacks.push(async () => rm(snapshotsDir, { recursive: true, force: true }));
+      const bundle = await createRoxyBrowserMcpInMemory({
+        sessionFactory: fakeSessionFactory,
+        snapshotsDir
+      });
+      cleanupCallbacks.push(async () => bundle.close());
+
+      const client = createClient();
+      cleanupCallbacks.push(async () => client.close());
+      await client.connect(bundle.clientTransport);
+      await client.callTool({
+        name: "roxy_browser_connect",
+        arguments: { endpoint: "ws://auto-snapshot.invalid/devtools/browser/1" }
+      });
+
+      const result = await client.callTool({
+        name: "browser_click",
+        arguments: { target: "e1" }
+      });
+
+      expect(result.isError).toBeUndefined();
+      const files = await readdir(snapshotsDir);
+      expect(files).toHaveLength(1);
+      expect(files[0]).toMatch(/^page-.*\.yml$/);
+      const snapshotFile = join(snapshotsDir, files[0]!);
+      await expect(readFile(snapshotFile, "utf8")).resolves.toContain("- button");
+      const text = textFromResult(result);
       expect(text).toContain("### Snapshot");
-      expect(text).toContain('button');
+      expect(text).toContain(`[Snapshot](${snapshotFile})`);
+      expect(text).not.toContain("```yaml");
+      expect(text).not.toContain("- button");
+    });
+
+    it("writes oversized explicit browser_snapshot results to a local file", async () => {
+      const snapshotsDir = await mkdtemp(join(tmpdir(), "roxybrowser-mcp-large-snapshots-"));
+      cleanupCallbacks.push(async () => rm(snapshotsDir, { recursive: true, force: true }));
+      const bundle = await createRoxyBrowserMcpInMemory({
+        sessionFactory: async (args) => new LargeSnapshotSession(args),
+        snapshotMode: "none",
+        snapshotsDir
+      });
+      cleanupCallbacks.push(async () => bundle.close());
+
+      const client = createClient();
+      cleanupCallbacks.push(async () => client.close());
+      await client.connect(bundle.clientTransport);
+      await client.callTool({
+        name: "roxy_browser_connect",
+        arguments: { endpoint: "ws://large-snapshot.invalid/devtools/browser/1" }
+      });
+
+      const result = await client.callTool({
+        name: "browser_snapshot",
+        arguments: {}
+      });
+
+      expect(result.isError).toBeUndefined();
+      const files = await readdir(snapshotsDir);
+      expect(files).toHaveLength(1);
+      const snapshotFile = join(snapshotsDir, files[0]!);
+      await expect(readFile(snapshotFile, "utf8")).resolves.toContain("large snapshot row 599");
+      const text = textFromResult(result);
+      expect(text).toContain(`[Snapshot](${snapshotFile})`);
+      expect(text).not.toContain("large snapshot row 599");
+      expect(text).not.toContain("```yaml");
+    });
+
+    it("keeps small explicit browser_snapshot results inline", async () => {
+      const snapshotsDir = await mkdtemp(join(tmpdir(), "roxybrowser-mcp-small-snapshots-"));
+      cleanupCallbacks.push(async () => rm(snapshotsDir, { recursive: true, force: true }));
+      const bundle = await createRoxyBrowserMcpInMemory({
+        sessionFactory: fakeSessionFactory,
+        snapshotMode: "none",
+        snapshotsDir
+      });
+      cleanupCallbacks.push(async () => bundle.close());
+
+      const client = createClient();
+      cleanupCallbacks.push(async () => client.close());
+      await client.connect(bundle.clientTransport);
+      await client.callTool({
+        name: "roxy_browser_connect",
+        arguments: { endpoint: "ws://small-snapshot.invalid/devtools/browser/1" }
+      });
+
+      const result = await client.callTool({
+        name: "browser_snapshot",
+        arguments: {}
+      });
+
+      expect(result.isError).toBeUndefined();
+      await expect(readdir(snapshotsDir)).resolves.toEqual([]);
+      const text = textFromResult(result);
+      expect(text).toContain("```yaml");
+      expect(text).toContain("- button");
+      expect(text).not.toContain("[Snapshot](");
+    });
+
+    it("writes an oversized roxy_browser_connect seed snapshot to a local file", async () => {
+      const snapshotsDir = await mkdtemp(join(tmpdir(), "roxybrowser-mcp-connect-snapshots-"));
+      cleanupCallbacks.push(async () => rm(snapshotsDir, { recursive: true, force: true }));
+      const bundle = await createRoxyBrowserMcpInMemory({
+        sessionFactory: async (args) => new LargeSnapshotSession(args),
+        snapshotsDir
+      });
+      cleanupCallbacks.push(async () => bundle.close());
+
+      const client = createClient();
+      cleanupCallbacks.push(async () => client.close());
+      await client.connect(bundle.clientTransport);
+
+      const result = await client.callTool({
+        name: "roxy_browser_connect",
+        arguments: { endpoint: "ws://large-connect.invalid/devtools/browser/1" }
+      });
+
+      expect(result.isError).toBeUndefined();
+      const files = await readdir(snapshotsDir);
+      expect(files).toHaveLength(1);
+      const snapshotFile = join(snapshotsDir, files[0]!);
+      await expect(readFile(snapshotFile, "utf8")).resolves.toContain("large snapshot row 599");
+      const text = textFromResult(result);
+      expect(text).toContain(`[Snapshot](${snapshotFile})`);
+      expect(text).not.toContain("large snapshot row 599");
+      expect(text).not.toContain("```yaml");
     });
 
     it("appends the updated snapshot to click results when snapshotMode is full", async () => {
@@ -7322,7 +7463,8 @@ describe("MCP server", () => {
       vi.useFakeTimers();
       try {
         const bundle = await createRoxyBrowserMcpInMemory({
-          sessionFactory: async (args) => new PendingRequestUntilCloseSession(args)
+          sessionFactory: async (args) => new PendingRequestUntilCloseSession(args),
+          snapshotMode: "none"
         });
         const client = createClient("close-interrupts-wait-client");
         await client.connect(bundle.clientTransport);
