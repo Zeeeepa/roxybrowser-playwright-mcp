@@ -267,7 +267,7 @@ export class McpRuntime {
 
   async newTab(
     url?: string,
-    activate = true
+    activate = false
   ): Promise<{ tabs: BrowserTab[]; snapshot?: BrowserSnapshot }> {
     const session = this.requireConnected();
     this.invalidateSnapshot();
@@ -294,7 +294,7 @@ export class McpRuntime {
 
   async selectTab(
     index: number,
-    activate = true
+    activate = false
   ): Promise<{ tabs: BrowserTab[]; snapshot?: BrowserSnapshot }> {
     const session = this.requireConnected();
     const tabs = await this.listTabs();
@@ -320,7 +320,7 @@ export class McpRuntime {
 
   async closeTab(
     index: number,
-    activate = true
+    activate = false
   ): Promise<{ tabs: BrowserTab[]; snapshot?: BrowserSnapshot }> {
     const session = this.requireConnected();
     const tabs = await this.listTabs();
@@ -1481,7 +1481,7 @@ export class McpRuntime {
       }
 
       const beforeTabs = await session.listTabs();
-      await session.newTab(origin);
+      await session.newTab(origin, { activate: true });
       const afterTabs = await session.listTabs();
       const temporaryTab = afterTabs.find((tab) => tab.active && !beforeTabs.some((before) => before.id === tab.id))
         ?? afterTabs.find((tab) => tab.active);
@@ -1489,10 +1489,10 @@ export class McpRuntime {
         await callback(origin);
       } finally {
         if (temporaryTab) {
-          await session.closeTab(temporaryTab.id).catch(() => {});
+          await session.closeTab(temporaryTab.id, { activate: true }).catch(() => {});
         }
         if (originalTab) {
-          await session.selectTab(originalTab.id).catch(() => {});
+          await session.selectTab(originalTab.id, { activate: true }).catch(() => {});
         }
         this.tabs = await session.listTabs().catch(() => this.tabs);
       }

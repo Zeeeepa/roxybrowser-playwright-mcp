@@ -2960,7 +2960,7 @@ describe("MCP server", () => {
     expect(textFromResult(invalidSelect)).toContain("Code: `invalid_tab_index`");
   });
 
-  it("supports background browser tab operations without changing the default", async () => {
+  it("keeps browser tab operations in the background by default and supports explicit activation", async () => {
     let capturedSession: FakeConnectedBrowserSession | undefined;
     const bundle = await createRoxyBrowserMcpInMemory({
       sessionFactory: async (args) => {
@@ -2992,24 +2992,24 @@ describe("MCP server", () => {
     });
     await client.callTool({
       name: "browser_tabs",
-      arguments: { action: "new", url: "https://example.test/background", activate: false }
+      arguments: { action: "new", url: "https://example.test/foreground", activate: true }
     });
     await client.callTool({
       name: "browser_tabs",
-      arguments: { action: "select", index: 0, activate: false }
+      arguments: { action: "select", index: 0, activate: true }
     });
     await client.callTool({
       name: "browser_tabs",
-      arguments: { action: "close", index: 1, activate: false }
+      arguments: { action: "close", index: 1, activate: true }
     });
 
     expect(capturedSession?.tabActivationCalls).toEqual([
-      { action: "new", activate: true },
-      { action: "select", activate: true },
-      { action: "close", activate: true },
       { action: "new", activate: false },
       { action: "select", activate: false },
-      { action: "close", activate: false }
+      { action: "close", activate: false },
+      { action: "new", activate: true },
+      { action: "select", activate: true },
+      { action: "close", activate: true }
     ]);
   });
 

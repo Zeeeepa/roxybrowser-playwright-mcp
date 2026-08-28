@@ -1686,7 +1686,7 @@ export class CdpConnectedBrowserSession implements ConnectedBrowserSession {
     url = "about:blank",
     options: BrowserTabActivationOptions = {}
   ): Promise<BrowserTab[]> {
-    const activate = options.activate ?? true;
+    const activate = options.activate ?? false;
     const browserMajorVersion = chromiumMajorVersion(this.versionString);
     if (
       !activate &&
@@ -1715,7 +1715,7 @@ export class CdpConnectedBrowserSession implements ConnectedBrowserSession {
     options: BrowserTabActivationOptions = {}
   ): Promise<BrowserTab[]> {
     this.activeTabId = tabId;
-    if (options.activate ?? true) {
+    if (options.activate ?? false) {
       await this.browserClient.Target.activateTarget({
         targetId: tabId
       });
@@ -1756,7 +1756,7 @@ export class CdpConnectedBrowserSession implements ConnectedBrowserSession {
 
     const fallbackIndex = index >= 0 ? Math.min(index, tabsAfterClose.length - 1) : 0;
     this.activeTabId = tabsAfterClose[fallbackIndex]?.id;
-    if (this.activeTabId && (options.activate ?? true)) {
+    if (this.activeTabId && (options.activate ?? false)) {
       await this.browserClient.Target.activateTarget({
         targetId: this.activeTabId
       });
@@ -4905,7 +4905,7 @@ export class BidiConnectedBrowserSession implements ConnectedBrowserSession {
     url = "about:blank",
     options: BrowserTabActivationOptions = {}
   ): Promise<BrowserTab[]> {
-    const activate = options.activate ?? true;
+    const activate = options.activate ?? false;
     const response = await this.client.browsingContextCreate({
       type: "tab",
       ...(!activate ? { background: true } : {})
@@ -4932,7 +4932,7 @@ export class BidiConnectedBrowserSession implements ConnectedBrowserSession {
     options: BrowserTabActivationOptions = {}
   ): Promise<BrowserTab[]> {
     this.activeTabId = tabId;
-    if (options.activate ?? true) {
+    if (options.activate ?? false) {
       await this.client.browsingContextActivate({
         context: tabId
       });
@@ -4965,7 +4965,7 @@ export class BidiConnectedBrowserSession implements ConnectedBrowserSession {
     }
     const fallbackIndex = index >= 0 ? Math.min(index, tabsAfterClose.length - 1) : 0;
     this.activeTabId = tabsAfterClose[fallbackIndex]?.id;
-    if (this.activeTabId && (options.activate ?? true)) {
+    if (this.activeTabId && (options.activate ?? false)) {
       await this.client.browsingContextActivate({
         context: this.activeTabId
       });

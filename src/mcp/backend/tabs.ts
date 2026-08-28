@@ -13,7 +13,7 @@ const tabs = defineTool({
       index: z.number().optional().describe("Tab index, used for close/select. If omitted for close, current tab is closed."),
       url: z.string().optional().describe("URL to navigate to in the new tab, used for new."),
       activate: z.boolean().optional().describe(
-        "Whether to activate the browser UI for new/select/close. Defaults to true for compatibility. Set false so background automation does not steal OS focus. Background new tabs require Chromium 145 or newer."
+        "Whether to activate the browser UI for new/select/close. Defaults to false so background automation does not steal OS focus. Set true to focus the browser. Background new tabs require Chromium 145 or newer."
       )
     }),
     type: "action"
@@ -24,20 +24,20 @@ const tabs = defineTool({
         await context.ensureTab();
         break;
       case "new":
-        await context.runtime.newTab(params.url, params.activate ?? true);
+        await context.runtime.newTab(params.url, params.activate ?? false);
         if (params.url) {
           response.setIncludeSnapshot();
           response.addCode(`await page.goto('${params.url}');`);
         }
         break;
       case "close":
-        await context.runtime.closeTab(params.index ?? 0, params.activate ?? true);
+        await context.runtime.closeTab(params.index ?? 0, params.activate ?? false);
         break;
       case "select":
         if (params.index === undefined) {
           throw new Error("Tab index is required");
         }
-        await context.runtime.selectTab(params.index, params.activate ?? true);
+        await context.runtime.selectTab(params.index, params.activate ?? false);
         break;
     }
     const tabs = await context.runtime.listTabs();

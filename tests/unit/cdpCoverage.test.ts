@@ -934,7 +934,7 @@ describe("CDP coverage", () => {
     await session.close();
   });
 
-  it("keeps CDP tab operations in the background when activation is disabled", async () => {
+  it("keeps CDP tab operations in the background by default", async () => {
     const module = await import("../../src/mcp/connectedBrowser.js");
     const browserClient = createCdpClientStub();
     const pageClient = createCdpClientStub();
@@ -965,9 +965,9 @@ describe("CDP coverage", () => {
       endpoint: "ws://127.0.0.1:9222/devtools/browser/example"
     });
 
-    await session.newTab("https://background.test/", { activate: false });
-    await session.selectTab("tab-1", { activate: false });
-    await session.closeTab("tab-1", { activate: false });
+    await session.newTab("https://background.test/");
+    await session.selectTab("tab-1");
+    await session.closeTab("tab-1");
 
     expect(browserClient.Target.createTarget).toHaveBeenCalledWith({
       url: "https://background.test/",
@@ -1017,7 +1017,7 @@ describe("CDP coverage", () => {
     await session.close();
   });
 
-  it("keeps BiDi tab operations in the background when activation is disabled", async () => {
+  it("keeps BiDi tab operations in the background by default", async () => {
     const module = await import("../../src/mcp/connectedBrowser.js");
     const browsingContextCreate = vi.fn(async () => ({ context: "tab-2" }));
     const browsingContextActivate = vi.fn(async () => ({}));
@@ -1051,8 +1051,8 @@ describe("CDP coverage", () => {
     session.offline = false;
     session.titleForContext = async (tabId) => tabId;
 
-    await session.newTab("https://background.test/", { activate: false });
-    await session.selectTab("tab-1", { activate: false });
+    await session.newTab("https://background.test/");
+    await session.selectTab("tab-1");
 
     expect(browsingContextCreate).toHaveBeenCalledWith({
       type: "tab",
