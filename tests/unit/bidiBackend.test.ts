@@ -394,6 +394,7 @@ describe("BidiBrowserAdapterFactory", () => {
       expect.objectContaining({
         awaitPromise: true,
         resultOwnership: "none",
+        userActivation: true,
         target: {
           context: "ctx-1"
         }
@@ -568,6 +569,10 @@ describe("BidiBrowserAdapterFactory", () => {
     const browser = await adapter.browser();
     const context = await browser.newContext({ reuseDefaultUserContext: true });
     const page = await context.newPage();
+    expect(client.browsingContextCreate).toHaveBeenCalledWith({
+      type: "tab",
+      background: true
+    });
     const internalPage = page as typeof page & {
       performMouseClickActions(): Promise<void>;
       performMouseMoveTo(): Promise<void>;

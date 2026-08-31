@@ -9,7 +9,20 @@ describe("elementHandle selectText e2e (bidi/firefox)", () => {
 
       await input!.selectText();
 
-      expect(await page.evaluate(() => window.getSelection().toString())).toBe("some value");
+      expect(await page.evaluate(() => {
+        const element = document.querySelector("input") as HTMLInputElement;
+        return {
+          selectionStart: element.selectionStart,
+          selectionEnd: element.selectionEnd,
+          active: document.activeElement === element,
+          hasFocus: document.hasFocus()
+        };
+      })).toEqual({
+        selectionStart: 0,
+        selectionEnd: 10,
+        active: true,
+        hasFocus: false
+      });
     });
   });
 
@@ -20,7 +33,20 @@ describe("elementHandle selectText e2e (bidi/firefox)", () => {
 
       await label!.selectText();
 
-      expect(await page.evaluate(() => window.getSelection().toString())).toBe("some value");
+      expect(await page.evaluate(() => {
+        const element = document.querySelector("input") as HTMLInputElement;
+        return {
+          selectionStart: element.selectionStart,
+          selectionEnd: element.selectionEnd,
+          active: document.activeElement === element,
+          hasFocus: document.hasFocus()
+        };
+      })).toEqual({
+        selectionStart: 0,
+        selectionEnd: 10,
+        active: true,
+        hasFocus: false
+      });
     });
   });
 });

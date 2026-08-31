@@ -1256,8 +1256,12 @@ class CdpBrowserContextAdapter implements ProtocolBrowserContextAdapter {
     this.pendingManualPageCreations += 1;
     let response: { targetId: string };
     try {
+      // ⚠️ DIVERGENCE FROM PLAYWRIGHT: Roxy keeps newly created pages in the
+      // background so automation never steals the user's browser focus.
+      // Call page.bringToFront() when foreground activation is intentional.
       response = await this.state.browserClient.Target.createTarget({
         url: "about:blank",
+        background: true,
         ...(this.browserContextId ? { browserContextId: this.browserContextId } : {})
       });
     } catch (error) {

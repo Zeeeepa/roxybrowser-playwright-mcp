@@ -893,16 +893,21 @@ class BidiBrowserContextAdapter implements ProtocolBrowserContextAdapter {
   }
 
   async newPage(): Promise<ProtocolPageAdapter> {
+    // ⚠️ DIVERGENCE FROM PLAYWRIGHT: Roxy keeps newly created pages in the
+    // background so automation never steals the user's browser focus.
+    // Call page.bringToFront() when foreground activation is intentional.
     const response = await this.client.browsingContextCreate(
       this.userContext
         ? {
             type: "window",
+            background: true,
             userContext: this.userContext
           }
         : {
             // Reuse the already-open RoxyBrowser window, but create a new tab
             // instead of hijacking the internal start page or opening a second window.
-            type: "tab"
+            type: "tab",
+            background: true
           }
     );
 
@@ -2582,7 +2587,8 @@ class BidiPageAdapter implements ProtocolPageAdapter {
         context: this.contextId
       },
       awaitPromise: true,
-      resultOwnership: "none"
+      resultOwnership: "none",
+      userActivation: true
     })) as BidiEvaluateResult;
 
     if (response.type === "exception") {
@@ -2623,7 +2629,8 @@ class BidiPageAdapter implements ProtocolPageAdapter {
         context: contextId
       },
       awaitPromise: true,
-      resultOwnership: "none"
+      resultOwnership: "none",
+      userActivation: true
     })) as BidiEvaluateResult;
 
     if (response.type === "exception") {

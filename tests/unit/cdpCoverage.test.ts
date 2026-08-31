@@ -252,6 +252,22 @@ describe("CDP coverage", () => {
     expect(pageClient.send).toHaveBeenCalledWith("HeapProfiler.collectGarbage");
   });
 
+  it("creates CDP pages in the background by default", async () => {
+    const { browserClient, page } = await createCdpPageClients();
+
+    expect(browserClient.Target.createTarget).toHaveBeenCalledWith({
+      url: "about:blank",
+      browserContextId: "ctx-1",
+      background: true
+    });
+
+    await page.bringToFront();
+
+    expect(browserClient.Target.activateTarget).toHaveBeenCalledWith({
+      targetId: "target-1"
+    });
+  });
+
   it("keeps CDP protocol input in the target without activating the browser window", async () => {
     const { browserClient, page, pageClient } = await createCdpPageClients();
     const internalPage = page as typeof page & {
